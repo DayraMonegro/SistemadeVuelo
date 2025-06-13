@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Datos de MongoDB{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>Datos Crudos de MongoDB</h1>
+    <div class="user-info">
+        <span class="user-avatar">{{ username[0]|upper }}</span>
+        <span class="username">¡Hola, {{ username }}!</span>
+        <a href="{{ url_for('logout') }}" title="Cerrar Sesión"><i class="fas fa-power-off"></i></a>
+    </div>
+</div>
+
+<div class="table-section">
+    <h3>Datos de la Colección (Ejemplo)</h3>
+    <pre style="white-space: pre-wrap; word-wrap: break-word; padding: 20px; background-color: var(--background-color); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color);">
+        <code>
+            {# Ejemplo de cómo podrías pasar y mostrar datos aquí #}
+            {% if data %}
+                {{ data | tojson(indent=4) }}
+            {% else %}
+                No hay datos para mostrar.
+            {% endif %}
+        </code>
+    </pre>
+</div>
+
+{% endblock %}

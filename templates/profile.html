@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Perfil{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>Perfil de Usuario</h1>
+    <div class="user-info">
+        <span class="user-avatar">{{ username[0]|upper }}</span>
+        <span class="username">¡Hola, {{ username }}!</span>
+        <a href="{{ url_for('logout') }}" title="Cerrar Sesión"><i class="fas fa-power-off"></i></a>
+    </div>
+</div>
+
+<div class="table-section"> {# Reutilizamos el estilo de la sección de tabla para un card grande #}
+    <h3>Información de tu Perfil</h3>
+    <div style="padding: 20px; text-align: center;">
+        <i class="fas fa-user-circle" style="font-size: 5em; color: var(--primary-color); margin-bottom: 20px;"></i>
+        <p style="font-size: 1.5em; font-weight: bold; margin-bottom: 10px;">Usuario: <span style="color: var(--text-color);">{{ username }}</span></p>
+        <p style="font-size: 1.1em; color: var(--text-light-color);">Aquí puedes gestionar la configuración de tu cuenta.</p>
+        <p style="font-size: 0.9em; color: var(--text-light-color); margin-top: 20px;">(Funcionalidad de gestión de perfil en desarrollo)</p>
+    </div>
+</div>
+
+{% endblock %}

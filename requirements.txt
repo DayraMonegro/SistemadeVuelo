@@ -1,0 +1,7 @@
+Flask
+psycopg2-binary
+render_template
+jsonify
+redirect
+url_for
+flash

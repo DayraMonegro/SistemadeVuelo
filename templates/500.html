@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Error del Servidor{% endblock %}
+
+{% block auth_content %}
+<div class="error-page-container">
+    <h1>500</h1>
+    <h2>Error Interno del Servidor</h2>
+    <p>Ha ocurrido un problema inesperado. Por favor, intenta de nuevo más tarde.</p>
+    <a href="{{ url_for('dashboard') }}">Volver al Dashboard</a>
+</div>
+{% endblock %}

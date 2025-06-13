@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Vuelos{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>Gestión de Vuelos</h1>
+    <div class="user-info">
+        <span class="user-avatar">{{ username[0]|upper }}</span>
+        <span class="username">¡Hola, {{ username }}!</span>
+        <a href="{{ url_for('logout') }}" title="Cerrar Sesión"><i class="fas fa-power-off"></i></a>
+    </div>
+</div>
+
+<div class="table-section">
+    <div class="table-actions">
+        <h3>Lista de Vuelos</h3>
+        <button id="addFlightBtn" class="btn btn-primary"><i class="fas fa-plus"></i> Añadir Nuevo Vuelo</button>
+    </div>
+    <table id="flightsTable" class="display nowrap" style="width:100%">
+        <thead>
+            <tr>
+                <th>ID Vuelo</th>
+                <th>Aerolínea</th>
+                <th>Origen</th>
+                <th>Destino</th>
+                <th>Fecha Salida</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            </tbody>
+    </table>
+</div>
+
+<div id="flightModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2 id="modalTitle">Añadir Nuevo Vuelo</h2>
+        <form id="flightForm">
+            <input type="hidden" id="flightId"> <div class="form-group">
+                <label for="modalIdVuelo">ID Vuelo</label>
+                <input type="text" id="modalIdVuelo" name="id_vuelo" required>
+            </div>
+            <div class="form-group">
+                <label for="modalAerolinea">Aerolínea</label>
+                <input type="text" id="modalAerolinea" name="aerolinea" required>
+            </div>
+            <div class="form-group">
+                <label for="modalOrigen">Origen</label>
+                <input type="text" id="modalOrigen" name="origen" required>
+            </div>
+            <div class="form-group">
+                <label for="modalDestino">Destino</label>
+                <input type="text" id="modalDestino" name="destino" required>
+            </div>
+            <div class="form-group">
+                <label for="modalFechaSalida">Fecha Salida</label>
+                <input type="datetime-local" id="modalFechaSalida" name="fecha_salida" required>
+            </div>
+            <div class="form-group">
+                <label for="modalEstado">Estado</label>
+                <select id="modalEstado" name="estado" required>
+                    <option value="Programado">Programado</option>
+                    <option value="En Vuelo">En Vuelo</option>
+                    <option value="Aterrizado">Aterrizado</option>
+                    <option value="Cancelado">Cancelado</option>
+                    <option value="Retrasado">Retrasado</option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" id="saveFlightBtn">Guardar</button>
+                <button type="button" class="btn btn-secondary" id="cancelFlightBtn">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

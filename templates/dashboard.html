@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>Dashboard Principal</h1>
+    <div class="user-info">
+        <span class="user-avatar">{{ username[0]|upper }}</span>
+        <span class="username">¡Hola, {{ username }}!</span>
+        <a href="{{ url_for('logout') }}" title="Cerrar Sesión"><i class="fas fa-power-off"></i></a>
+    </div>
+</div>
+
+<div class="kpi-cards">
+    <div class="kpi-card">
+        <div class="icon"><i class="fas fa-plane"></i></div>
+        <div class="value" id="totalFlights">...</div>
+        <div class="label">Total de Vuelos</div>
+    </div>
+    <div class="kpi-card">
+        <div class="icon"><i class="fas fa-plane-departure"></i></div>
+        <div class="value" id="flightsToday">...</div>
+        <div class="label">Vuelos Hoy</div>
+    </div>
+    <div class="kpi-card">
+        <div class="icon"><i class="fas fa-clock"></i></div>
+        <div class="value" id="activeFlights">...</div>
+        <div class="label">Vuelos Activos</div>
+    </div>
+    <div class="kpi-card">
+        <div class="icon"><i class="fas fa-dollar-sign"></i></div>
+        <div class="value" id="totalRevenue">...</div>
+        <div class="label">Ingresos Totales</div>
+    </div>
+</div>
+
+<div class="chart-grid">
+    <div class="chart-box">
+        <h3>Vuelos por Aerolínea</h3>
+        <div class="chart-container">
+            <canvas id="flightsByAirlineChart"></canvas>
+            <div class="loader-overlay" id="loaderFlightsByAirline">
+                <div class="loader"></div>
+            </div>
+        </div>
+    </div>
+    <div class="chart-box">
+        <h3>Estado de Vuelos</h3>
+        <div class="chart-container">
+            <canvas id="flightStatusChart"></canvas>
+            <div class="loader-overlay" id="loaderFlightStatus">
+                <div class="loader"></div>
+            </div>
+        </div>
+    </div>
+    <div class="chart-box full-width"> {# Clase para que ocupe todo el ancho en algunos casos #}
+        <h3>Vuelos Diarios (Últimos 7 Días)</h3>
+        <div class="chart-container">
+            <canvas id="dailyFlightsChart"></canvas>
+            <div class="loader-overlay" id="loaderDailyFlights">
+                <div class="loader"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="table-section">
+    <h3>Vuelos Recientes</h3>
+    <table id="flightsTable" class="display nowrap" style="width:100%">
+        <thead>
+            <tr>
+                <th>ID Vuelo</th>
+                <th>Aerolínea</th>
+                <th>Origen</th>
+                <th>Destino</th>
+                <th>Fecha Salida</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            </tbody>
+    </table>
+</div>
+
+{% endblock %}
