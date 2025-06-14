@@ -83,7 +83,10 @@ $(document).ready(function() {
     const table = $('#flightsTable').DataTable({
         ajax: {
             url: '/api/flights',
-            dataSrc: 'data'
+            dataSrc: 'data',
+            error: function(xhr, error, thrown) {
+                console.error('Error al cargar los datos:', error);
+            }
         },
         columns: [
             { data: 'id_vuelo' },
@@ -92,11 +95,7 @@ $(document).ready(function() {
             { data: 'fecha_salida' },
             { data: 'estado' },
             { 
-                data: null,
-                render: function(data, type, row) {
-                    return `<button class="btn btn-edit btn-sm" data-id="${row._id.$oid || row._id}" title="Editar Vuelo"><i class="fas fa-edit"></i></button>
-                            <button class="btn btn-delete btn-sm" data-id="${row._id.$oid || row._id}" title="Eliminar Vuelo"><i class="fas fa-trash"></i></button>`;
-                },
+                data: 'actions',
                 orderable: false,
                 searchable: false
             }
@@ -105,7 +104,10 @@ $(document).ready(function() {
         pageLength: 10,
         language: {
             url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json'
-        }
+        },
+        serverSide: true, // Habilitar procesamiento del lado del servidor para paginación
+        processing: true, // Mostrar mensaje de procesamiento
+        order: [[0, 'asc']] // Ordenar por ID Vuelo por defecto
     });
 
     // Modal para agregar/editar vuelos
@@ -125,7 +127,7 @@ $(document).ready(function() {
         };
 
         const method = flightId ? 'PUT' : 'POST';
-        const url = flightId ? `/api/flights/${flightId}` : '/api/flights';
+        const url = flightId ? /api/vuelos/${flightId} : '/api/vuelos'; // Corregir ruta a '/api/vuelos'
 
         $.ajax({
             url: url,
@@ -153,10 +155,10 @@ $(document).ready(function() {
     };
 
     // Abrir modal para editar vuelo
-    $('#flightsTable tbody').on('click', '.btn-edit', function() {
+    $('#flightsTable tbody').on('click', '.edit-btn', function() { // Cambiar .btn-edit por .edit-btn
         const flightId = $(this).data('id');
         $.ajax({
-            url: `/api/flights/${flightId}`,
+            url: /api/vuelos/${flightId}, // Corregir ruta a '/api/vuelos'
             type: 'GET',
             success: function(flight) {
                 $('#modalTitle').text('Editar Vuelo');
@@ -175,11 +177,11 @@ $(document).ready(function() {
     });
 
     // Eliminar vuelo
-    $('#flightsTable tbody').on('click', '.btn-delete', function() {
+    $('#flightsTable tbody').on('click', '.delete-btn', function() { // Cambiar .btn-delete por .delete-btn
         const flightId = $(this).data('id');
         if (confirm('¿Estás seguro de que quieres eliminar este vuelo?')) {
             $.ajax({
-                url: `/api/flights/${flightId}`,
+                url: /api/vuelos/${flightId}, // Corregir ruta a '/api/vuelos'
                 type: 'DELETE',
                 success: function() {
                     table.ajax.reload();
@@ -208,7 +210,7 @@ $(document).ready(function() {
             $('#totalFlights').text(data.total_flights);
             $('#flightsToday').text(data.flights_today);
             $('#activeFlights').text(data.active_flights);
-            $('#totalRevenue').text(`$${data.total_revenue.toFixed(2)}`);
+            $('#totalRevenue').text($${data.total_revenue.toFixed(2)});
         }
     });
 });
@@ -217,12 +219,12 @@ $(document).ready(function() {
 <style>
 .btn-sm { padding: 6px 12px; font-size: 0.875em; margin-right: 5px; border-radius: 4px; transition: all 0.3s ease; }
 .btn-add { background-color: #008CBA; color: white; padding: 8px 15px; border-radius: 4px; }
-.btn-edit.btn-sm { background-color: #4CAF50; color: white; }
+.btn-warning.btn-sm { background-color: #ffc107; color: white; } /* Estilo para editar */
+.btn-danger.btn-sm { background-color: #dc3545; color: white; } /* Estilo para eliminar */
 .btn-save { background-color: #2196F3; color: white; padding: 8px 15px; border-radius: 4px; }
-.btn-delete.btn-sm { background-color: #f44336; color: white; }
 .btn-cancel { background-color: #6c757d; color: white; padding: 8px 15px; border-radius: 4px; }
 .btn-add:hover, .btn-save:hover, .btn-cancel:hover { opacity: 0.9; }
-.btn-edit.btn-sm:hover, .btn-delete.btn-sm:hover { transform: translateY(-2px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.btn-warning.btn-sm:hover, .btn-danger.btn-sm:hover { transform: translateY(-2px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 .form-group { margin-bottom: 15px; }
 .form-group label { display: block; margin-bottom: 5px; }
 .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }

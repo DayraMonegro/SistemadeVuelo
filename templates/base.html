@@ -4,44 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Panel de Vuelos{% endblock %}</title>
-    <link rel="icon" href="https://i.pinimg.com/736x/6c/a7/c2/6ca7c2906eeacea7823f84682efeabc8.jpg" type="image/x-icon">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
     
-    <!-- CSS de Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
-    <!-- CSS de DataTables -->
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.dataTables.min.css">
     
-    <!-- CSS de OverlayScrollbars -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/overlayscrollbars/1.13.0/css/OverlayScrollbars.min.css">
-    
-    <!-- CSS personalizado -->
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body data-theme="light">
-    <!-- Barra lateral -->
     <aside class="sidebar">
         <div class="logo">
-            <img src="https://i.pinimg.com/736x/36/d7/d9/36d7d93135d02f4360730ade069fb435.jpg" alt="Logo de Avión">
+            <img src="https://i.pinimg.com/736x/d4/be/d2/d4bed22d6ef3246c62278fac9343ba6e.jpg" alt="Logo de Avión">
             <h2>Gestión de Vuelos</h2>
         </div>
         <nav>
             <ul>
-                <li><a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}">
-                    <i class="fas fa-tachometer-alt"></i> Dashboard
-                </a></li>
-                <li><a href="{{ url_for('flights') }}" class="{% if request.endpoint == 'flights' %}active{% endif %}">
-                    <i class="fas fa-plane"></i> Vuelos
-                </a></li>
-                <li><a href="{{ url_for('charts') }}" class="{% if request.endpoint == 'charts' %}active{% endif %}">
-                    <i class="fas fa-chart-bar"></i> Gráficos
-                </a></li>
-                <li><a href="{{ url_for('profile') }}" class="{% if request.endpoint == 'profile' %}active{% endif %}">
-                    <i class="fas fa-user-circle"></i> Perfil
-                </a></li>
-                <li class="logout-link"><a href="{{ url_for('logout') }}">
-                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-                </a></li>
+                <li><a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="{{ url_for('flights') }}" class="{% if request.endpoint == 'flights' %}active{% endif %}"><i class="fas fa-plane"></i> Vuelos</a></li>
+                <li><a href="{{ url_for('charts') }}" class="{% if request.endpoint == 'charts' %}active{% endif %}"><i class="fas fa-chart-bar"></i> Gráficos</a></li>
+                <li><a href="{{ url_for('profile') }}" class="{% if request.endpoint == 'profile' %}active{% endif %}"><i class="fas fa-user-circle"></i> Perfil</a></li>
+                <li class="logout-link"><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
             </ul>
         </nav>
         <div class="theme-toggle-container">
@@ -54,65 +40,50 @@
         </div>
     </aside>
 
-    <!-- Área de contenido principal -->
     <div class="content-area">
-        <!-- Mensajes flash -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <div class="flash-messages-container">
                     {% for category, message in messages %}
                         <div class="alert alert-{{ category }}">
                             {{ message }}
-                            <button type="button" class="close" onclick="this.parentElement.remove()">
-                                <span aria-hidden="true">×</span>
-                            </button>
                         </div>
                     {% endfor %}
                 </div>
             {% endif %}
         {% endwith %}
 
-        <!-- Bloque de contenido principal -->
-        {% block content %}{% endblock %}
+        {% block content %}
+        {# Este bloque será rellenado por dashboard.html, profile.html, etc. #}
+        {% endblock %}
 
-        <!-- Pie de página -->
         <footer class="footer">
-            <p>© {{ '2025' if not now else now.year }} Gestión de Vuelos. Todos los derechos reservados.</p>
+            <p>&copy; 2025 Gestión de Vuelos. Todos los derechos reservados.</p>
         </footer>
     </div>
 
-    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
-    <!-- DataTables JS -->
     <script type="text/javascript" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-    
-    <!-- Chart.js -->
+    <script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- D3.js -->
     <script src="https://d3js.org/d3.v7.min.js"></script> 
-    
-    <!-- OverlayScrollbars JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/overlayscrollbars/1.13.0/js/OverlayScrollbars.min.js"></script>
-    
-    <!-- Scripts personalizados -->
+
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
-    <!-- Scripts iniciales -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Lógica para los mensajes flash
+            // Lógica para los mensajes flash (desaparecer después de un tiempo)
             const flashMessages = document.querySelectorAll('.flash-messages-container .alert');
             flashMessages.forEach(msg => {
                 setTimeout(() => {
                     msg.style.opacity = '0';
                     msg.style.transition = 'opacity 0.5s ease-out';
-                    setTimeout(() => msg.remove(), 500);
-                }, 4000);
+                    setTimeout(() => msg.remove(), 500); // Remover después de la transición
+                }, 4000); // Desaparecer después de 4 segundos
             });
 
-            // Lógica del tema oscuro/claro
+            // Lógica del tema oscuro/claro (si no la tienes en main.js)
             const themeToggle = document.getElementById('theme-toggle');
             const body = document.body;
 
@@ -132,25 +103,31 @@
                 }
             });
 
-            // Inicializar OverlayScrollbars
+            // Con OverlayScrollbars:
             if (typeof OverlayScrollbars !== 'undefined') {
-                try {
-                    const scrollbarConfig = {
+                if (document.querySelector('.sidebar')) {
+                    OverlayScrollbars(document.querySelector('.sidebar'), {
                         className: "os-theme-dark",
                         scrollbars: {
                             visibility: "auto",
                             autoHide: "leave"
                         }
-                    };
-                    const sidebar = document.querySelector('.sidebar');
-                    const contentArea = document.querySelector('.content-area');
-                    if (sidebar) OverlayScrollbars(sidebar, scrollbarConfig);
-                    if (contentArea) OverlayScrollbars(contentArea, scrollbarConfig);
-                } catch (e) {
-                    console.warn('OverlayScrollbars no se inicializó correctamente:', e);
+                    });
+                }
+                if (document.querySelector('.content-area')) {
+                    OverlayScrollbars(document.querySelector('.content-area'), {
+                        className: "os-theme-dark",
+                        scrollbars: {
+                            visibility: "auto",
+                            autoHide: "leave"
+                        }
+                    });
                 }
             }
         });
     </script>
+
+    {% block page_js %}{% endblock %}
+
 </body>
 </html>

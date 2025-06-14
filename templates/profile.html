@@ -42,6 +42,10 @@
     </div>
 </div>
 
+{% endblock %} {# FIN del block content #}
+
+{# Este bloque se inyectará en base.html DESPUÉS de todas las librerías JS #}
+{% block page_js %}
 {# Carga el archivo JavaScript específico para el perfil #}
 <script src="{{ url_for('static', filename='js/profile.js') }}"></script>
 {% endblock %}
