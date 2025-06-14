@@ -15,29 +15,29 @@
 <div class="kpi-cards">
     <div class="kpi-card">
         <div class="icon"><i class="fas fa-plane"></i></div>
-        <div class="value" id="totalFlights">...</div>
+        <div class="value" id="totalFlights">Cargando...</div>
         <div class="label">Total de Vuelos</div>
     </div>
     <div class="kpi-card">
         <div class="icon"><i class="fas fa-plane-departure"></i></div>
-        <div class="value" id="flightsToday">...</div>
-        <div class="label">Vuelos Hoy</div>
+        <div class="value" id="flightsToday">Cargando...</div>
+        <div class="label">Reservas Hoy</div>
     </div>
     <div class="kpi-card">
         <div class="icon"><i class="fas fa-clock"></i></div>
-        <div class="value" id="activeFlights">...</div>
-        <div class="label">Vuelos Activos</div>
+        <div class="value" id="activeFlights">Cargando...</div>
+        <div class="label">Reservas Activas</div>
     </div>
     <div class="kpi-card">
         <div class="icon"><i class="fas fa-dollar-sign"></i></div>
-        <div class="value" id="totalRevenue">...</div>
+        <div class="value" id="totalRevenue">Cargando...</div>
         <div class="label">Ingresos Totales</div>
     </div>
 </div>
 
 <div class="chart-grid">
     <div class="chart-box">
-        <h3>Vuelos por Aerolínea</h3>
+        <h3>Vuelos por Origen</h3>
         <div class="chart-container">
             <canvas id="flightsByAirlineChart"></canvas>
             <div class="loader-overlay" id="loaderFlightsByAirline">
@@ -45,17 +45,8 @@
             </div>
         </div>
     </div>
-    <div class="chart-box">
-        <h3>Estado de Vuelos</h3>
-        <div class="chart-container">
-            <canvas id="flightStatusChart"></canvas>
-            <div class="loader-overlay" id="loaderFlightStatus">
-                <div class="loader"></div>
-            </div>
-        </div>
-    </div>
-    <div class="chart-box full-width"> {# Clase para que ocupe todo el ancho en algunos casos #}
-        <h3>Vuelos Diarios (Últimos 7 Días)</h3>
+    <div class="chart-box full-width">
+        <h3>Reservas Diarias (Últimos 30 Días)</h3>
         <div class="chart-container">
             <canvas id="dailyFlightsChart"></canvas>
             <div class="loader-overlay" id="loaderDailyFlights">
@@ -66,12 +57,14 @@
 </div>
 
 <div class="table-section">
-    <h3>Vuelos Recientes</h3>
+    <div class="table-actions">
+        <h3>Vuelos Recientes</h3>
+        <button class="btn btn-add" onclick="openAddFlightModal()"><i class="fas fa-plus"></i> Agregar Vuelo</button>
+    </div>
     <table id="flightsTable" class="display nowrap" style="width:100%">
         <thead>
             <tr>
                 <th>ID Vuelo</th>
-                <th>Aerolínea</th>
                 <th>Origen</th>
                 <th>Destino</th>
                 <th>Fecha Salida</th>
@@ -79,9 +72,160 @@
                 <th>Acciones</th>
             </tr>
         </thead>
-        <tbody>
-            </tbody>
+        <tbody></tbody>
     </table>
 </div>
 
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Inicializar DataTables
+    const table = $('#flightsTable').DataTable({
+        ajax: {
+            url: '/api/flights',
+            dataSrc: 'data'
+        },
+        columns: [
+            { data: 'id_vuelo' },
+            { data: 'origen' },
+            { data: 'destino' },
+            { data: 'fecha_salida' },
+            { data: 'estado' },
+            { 
+                data: null,
+                render: function(data, type, row) {
+                    return `<button class="btn btn-edit btn-sm" data-id="${row._id.$oid || row._id}" title="Editar Vuelo"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-delete btn-sm" data-id="${row._id.$oid || row._id}" title="Eliminar Vuelo"><i class="fas fa-trash"></i></button>`;
+                },
+                orderable: false,
+                searchable: false
+            }
+        ],
+        responsive: true,
+        pageLength: 10,
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json'
+        }
+    });
+
+    // Modal para agregar/editar vuelos
+    const modal = $('<div id="flightModal" class="modal"><div class="modal-content"><span class="close-button">×</span><h2 id="modalTitle">Agregar Vuelo</h2><form id="flightForm"><div class="form-group"><label for="id_vuelo">ID Vuelo</label><input type="text" id="id_vuelo" name="id_vuelo" required></div><div class="form-group"><label for="origen">Origen</label><input type="text" id="origen" name="origen" required></div><div class="form-group"><label for="destino">Destino</label><input type="text" id="destino" name="destino" required></div><div class="form-group"><label for="fecha_salida">Fecha Salida</label><input type="datetime-local" id="fecha_salida" name="fecha_salida" required></div><div class="form-group"><label for="estado">Estado</label><select id="estado" name="estado" required><option value="Programado">Programado</option><option value="En Vuelo">En Vuelo</option><option value="Aterrizado">Aterrizado</option><option value="Retrasado">Retrasado</option></select></div><div class="form-actions"><button type="submit" class="btn btn-save">Guardar</button><button type="button" class="btn btn-cancel" onclick="closeModal()">Cancelar</button></div></form></div></div>');
+    $('body').append(modal);
+
+    // Manejar el envío del formulario
+    $('#flightForm').on('submit', function(e) {
+        e.preventDefault();
+        const flightId = $('#flightModal').data('id');
+        const data = {
+            id_vuelo: $('#id_vuelo').val(),
+            origen: $('#origen').val(),
+            destino: $('#destino').val(),
+            fecha_salida: $('#fecha_salida').val(),
+            estado: $('#estado').val()
+        };
+
+        const method = flightId ? 'PUT' : 'POST';
+        const url = flightId ? `/api/flights/${flightId}` : '/api/flights';
+
+        $.ajax({
+            url: url,
+            type: method,
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function(response) {
+                table.ajax.reload();
+                closeModal();
+                alert('Vuelo guardado exitosamente');
+            },
+            error: function(xhr) {
+                alert('Error al guardar el vuelo: ' + (xhr.responseJSON?.message || xhr.statusText));
+            }
+        });
+    });
+
+    // Abrir modal para agregar vuelo
+    window.openAddFlightModal = function() {
+        $('#modalTitle').text('Agregar Vuelo');
+        $('#flightForm')[0].reset();
+        $('#id_vuelo').prop('readonly', false);
+        $('#flightModal').data('id', '');
+        $('#flightModal').css('display', 'flex');
+    };
+
+    // Abrir modal para editar vuelo
+    $('#flightsTable tbody').on('click', '.btn-edit', function() {
+        const flightId = $(this).data('id');
+        $.ajax({
+            url: `/api/flights/${flightId}`,
+            type: 'GET',
+            success: function(flight) {
+                $('#modalTitle').text('Editar Vuelo');
+                $('#id_vuelo').val(flight.id_vuelo).prop('readonly', true);
+                $('#origen').val(flight.origen);
+                $('#destino').val(flight.destino);
+                $('#fecha_salida').val(flight.fecha_salida.replace('Z', '').slice(0, 16));
+                $('#estado').val(flight.estado);
+                $('#flightModal').data('id', flightId);
+                $('#flightModal').css('display', 'flex');
+            },
+            error: function(xhr) {
+                alert('Error al cargar el vuelo: ' + (xhr.responseJSON?.message || xhr.statusText));
+            }
+        });
+    });
+
+    // Eliminar vuelo
+    $('#flightsTable tbody').on('click', '.btn-delete', function() {
+        const flightId = $(this).data('id');
+        if (confirm('¿Estás seguro de que quieres eliminar este vuelo?')) {
+            $.ajax({
+                url: `/api/flights/${flightId}`,
+                type: 'DELETE',
+                success: function() {
+                    table.ajax.reload();
+                    alert('Vuelo eliminado exitosamente');
+                },
+                error: function(xhr) {
+                    alert('Error al eliminar el vuelo: ' + (xhr.responseJSON?.message || xhr.statusText));
+                }
+            });
+        }
+    });
+
+    // Cerrar modal
+    window.closeModal = function() {
+        $('#flightModal').css('display', 'none');
+    };
+
+    // Manejar el cierre del modal con el botón de cerrar
+    $('.close-button').on('click', closeModal);
+
+    // Cargar datos iniciales de KPIs
+    $.ajax({
+        url: '/api/kpis',
+        type: 'GET',
+        success: function(data) {
+            $('#totalFlights').text(data.total_flights);
+            $('#flightsToday').text(data.flights_today);
+            $('#activeFlights').text(data.active_flights);
+            $('#totalRevenue').text(`$${data.total_revenue.toFixed(2)}`);
+        }
+    });
+});
+</script>
+
+<style>
+.btn-sm { padding: 6px 12px; font-size: 0.875em; margin-right: 5px; border-radius: 4px; transition: all 0.3s ease; }
+.btn-add { background-color: #008CBA; color: white; padding: 8px 15px; border-radius: 4px; }
+.btn-edit.btn-sm { background-color: #4CAF50; color: white; }
+.btn-save { background-color: #2196F3; color: white; padding: 8px 15px; border-radius: 4px; }
+.btn-delete.btn-sm { background-color: #f44336; color: white; }
+.btn-cancel { background-color: #6c757d; color: white; padding: 8px 15px; border-radius: 4px; }
+.btn-add:hover, .btn-save:hover, .btn-cancel:hover { opacity: 0.9; }
+.btn-edit.btn-sm:hover, .btn-delete.btn-sm:hover { transform: translateY(-2px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; }
+.form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+</style>
+{% endblock %}
 {% endblock %}

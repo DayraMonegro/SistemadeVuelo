@@ -12,14 +12,36 @@
     </div>
 </div>
 
-<div class="table-section"> {# Reutilizamos el estilo de la sección de tabla para un card grande #}
-    <h3>Información de tu Perfil</h3>
-    <div style="padding: 20px; text-align: center;">
+<div class="table-section" style="background-image: url('https://i.pinimg.com/736x/60/55/d9/6055d9538165b369bcf35481189c8dd1.jpg'); background-size: cover; background-position: center center; background-repeat: no-repeat; position: relative; z-index: 0; min-height: 400px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.3); z-index: -1;"></div>
+
+    <div style="padding: 20px; text-align: center; z-index: 1;">
+        <h3>Información de tu Perfil</h3>
         <i class="fas fa-user-circle" style="font-size: 5em; color: var(--primary-color); margin-bottom: 20px;"></i>
-        <p style="font-size: 1.5em; font-weight: bold; margin-bottom: 10px;">Usuario: <span style="color: var(--text-color);">{{ username }}</span></p>
-        <p style="font-size: 1.1em; color: var(--text-light-color);">Aquí puedes gestionar la configuración de tu cuenta.</p>
+
+        {# Sección para mostrar el nombre de usuario (modo visualización) #}
+        <div id="display-profile" style="margin-bottom: 20px;">
+            <p style="font-size: 1.5em; font-weight: bold; margin-bottom: 10px;">Usuario: <span id="current-username" style="color: var(--text-color);">{{ username }}</span></p>
+            <button id="edit-profile-btn" class="btn btn-primary btn-sm"><i class="fas fa-edit"></i> Editar Perfil</button>
+        </div>
+
+        {# Sección para editar el perfil (modo edición, inicialmente oculto) #}
+        <div id="edit-profile-form" style="display: none; text-align: left; max-width: 300px; margin: 0 auto; background-color: var(--card-bg-color); padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            <h4 style="margin-bottom: 15px; color: var(--primary-color);">Editar Usuario</h4>
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label for="new-username" style="display: block; margin-bottom: 5px; font-weight: bold;">Nuevo Nombre de Usuario:</label>
+                <input type="text" id="new-username" class="form-control" value="{{ username }}" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            {# Aquí podrías añadir campos para contraseña, email, etc. #}
+            <button id="save-profile-btn" class="btn btn-success" style="margin-right: 10px;"><i class="fas fa-save"></i> Guardar Cambios</button>
+            <button id="cancel-edit-btn" class="btn btn-secondary"><i class="fas fa-times"></i> Cancelar</button>
+        </div>
+
+        <p style="font-size: 1.1em; color: var(--text-light-color); margin-top: 20px;">Aquí puedes gestionar la configuración de tu cuenta.</p>
         <p style="font-size: 0.9em; color: var(--text-light-color); margin-top: 20px;">(Funcionalidad de gestión de perfil en desarrollo)</p>
     </div>
 </div>
 
+{# Carga el archivo JavaScript específico para el perfil #}
+<script src="{{ url_for('static', filename='js/profile.js') }}"></script>
 {% endblock %}

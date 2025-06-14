@@ -9,12 +9,12 @@
     --accent-color: #28a745; /* Verde para acentos o éxito */
     
     /* Fondo y texto (Light Theme) */
-    --background-color: #f8f9fa; /* Fondo muy claro */
-    --card-background: #ffffff; /* Fondo blanco para tarjetas */
+    --background-color: #4c6680; /* Fondo muy claro */
+    --card-background: #3a0f0f; /* Fondo blanco para tarjetas */
     --text-color: #343a40; /* Texto oscuro */
     --text-light-color: #6c757d; /* Texto gris claro */
-    --border-color: #e9ecef; /* Borde muy claro */
-    --input-bg: #ffffff; /* Fondo de inputs en tema claro */
+    --border-color: #97b1ca; /* Borde muy claro */
+    --input-bg: #21a596; /* Fondo de inputs en tema claro */
 
     /* Sidebar (Light Theme) */
     --sidebar-bg: #2c3e50; /* Azul oscuro */
@@ -26,8 +26,12 @@
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.12);
     --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.08), 0 6px 20px rgba(0, 0, 0, 0.05);
     --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1), 0 12px 40px rgba(0, 0, 0, 0.08);
+    --shadow-medium: var(--shadow-md); /* Fallback */
+    --shadow-hover: var(--shadow-lg);  /* Fallback */
+    --card-background-rgb: 255, 255, 255; /* RGB para light theme */
+    --input-background: var(--input-bg); /* Corrección tipográfica */
 
-    /* Colores para gráficos (pueden ser override por JS si es necesario) */
+    /* Colores para gráficos */
     --chart-color-1: var(--primary-color);
     --chart-color-2: #28a745; /* Verde */
     --chart-color-3: #ffc107; /* Amarillo */
@@ -45,8 +49,8 @@
     /* Fondo y texto (Dark Theme) */
     --background-color: #1a202c; /* Fondo oscuro */
     --card-background: #2d3748; /* Fondo más oscuro para tarjetas */
-    --text-color: #e2e8f0; /* Texto claro */
-    --text-light-color: #a0aec0; /* Texto gris claro */
+    --text-color: #020e27; /* Texto claro */
+    --text-light-color: #041e42; /* Texto gris claro */
     --border-color: #4a5568; /* Borde oscuro */
     --input-bg: #2d3748; /* Fondo de inputs en tema oscuro */
 
@@ -61,10 +65,12 @@
     --primary-dark-color: #4da6ff; /* Azul más oscuro para hover en tema oscuro */
     --accent-color: #6cff6c; /* Verde claro */
     
-    /* Sombras para tema oscuro (más sutiles o con menos opacidad) */
+    /* Sombras para tema oscuro */
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.15);
     --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.25), 0 12px 40px rgba(0, 0, 0, 0.2);
+    --card-background-rgb: 45, 55, 72; /* RGB para dark theme */
+    --input-background: var(--input-bg); /* Corrección tipográfica */
 
     /* Colores para gráficos en tema oscuro */
     --chart-color-1: var(--primary-color);
@@ -134,7 +140,6 @@ button {
 ::-webkit-scrollbar-thumb:hover {
     background: var(--text-light-color);
 }
-
 
 /* Sidebar */
 .sidebar {
@@ -208,7 +213,7 @@ button {
 
 .sidebar nav ul li a.active {
     background-color: var(--sidebar-active-color);
-    color: #ffffff; /* Texto blanco para el elemento activo */
+    color: #063437; /* Texto blanco para el elemento activo */
     box-shadow: var(--shadow-sm);
     font-weight: 700;
     transform: translateX(0); /* Evita traslación en activo */
@@ -276,7 +281,7 @@ button {
     width: 20px;
     left: 4px;
     bottom: 4px;
-    background-color: white;
+    background-color: rgb(7, 64, 36);
     transition: .4s;
     border-radius: 50%;
 }
@@ -293,6 +298,13 @@ input:checked + .slider:before {
     transform: translateX(22px);
 }
 
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
 
 /* Main Content Area */
 .content-area {
@@ -362,7 +374,6 @@ input:checked + .slider:before {
     background-color: var(--border-color);
     color: var(--primary-color);
 }
-
 
 /* KPI Cards */
 .kpi-cards {
@@ -519,7 +530,7 @@ table.dataTable {
 
 table.dataTable thead th {
     background-color: var(--primary-color);
-    color: #ffffff; /* Texto blanco para encabezados de tabla */
+    color: #300328; /* Texto blanco para encabezados de tabla */
     padding: 12px 18px;
     border-bottom: 1px solid var(--primary-dark-color);
     text-align: left;
@@ -545,7 +556,7 @@ table.dataTable.no-footer {
 
 .dataTables_wrapper .dataTables_paginate .paginate_button {
     background-color: var(--primary-color);
-    color: #ffffff !important; /* Texto blanco */
+    color: #2d986d !important; /* Texto blanco */
     border: 1px solid var(--primary-color);
     border-radius: 8px;
     padding: 8px 15px;
@@ -565,7 +576,7 @@ table.dataTable.no-footer {
 .dataTables_wrapper .dataTables_paginate .paginate_button.current,
 .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
     background-color: var(--accent-color); /* Color diferente para activo */
-    color: #ffffff !important;
+    color: #743b3b !important;
     border-color: var(--accent-color);
     transform: translateY(0); /* Sin traslación en activo */
     cursor: default;
@@ -631,7 +642,6 @@ table.dataTable.no-footer {
     box-shadow: var(--shadow-sm);
     font-size: 0.95em;
 }
-
 
 /* Auth Pages (Login/Register) */
 .auth-container {
@@ -699,7 +709,7 @@ table.dataTable.no-footer {
     width: 100%;
     padding: 15px;
     background-color: var(--primary-color);
-    color: #ffffff;
+    color: #065849;
     border: none;
     border-radius: 10px;
     font-size: 1.2em;
@@ -742,7 +752,6 @@ table.dataTable.no-footer {
     font-weight: bold;
 }
 
-
 /* 404/500 Pages */
 .error-page-container {
     display: flex;
@@ -784,7 +793,7 @@ table.dataTable.no-footer {
     display: inline-block;
     padding: 14px 30px;
     background-color: var(--primary-color);
-    color: #ffffff;
+    color: #049867;
     border-radius: 10px;
     transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     font-weight: bold;
@@ -800,7 +809,7 @@ table.dataTable.no-footer {
     box-shadow: var(--shadow-md);
 }
 
-/* Ripple Effect (Asegura que el CSS esté después de la definición de colores) */
+/* Ripple Effect */
 .ripple-effect {
     position: absolute;
     top: 0;
@@ -808,8 +817,8 @@ table.dataTable.no-footer {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    border-radius: inherit; /* Inherit border-radius from the parent button */
-    pointer-events: none; /* Allow clicks to pass through */
+    border-radius: inherit;
+    pointer-events: none;
 }
 
 .ripple {
@@ -817,11 +826,10 @@ table.dataTable.no-footer {
     border-radius: 50%;
     transform: scale(0);
     animation: ripple-animation 0.6s linear;
-    background-color: rgba(255, 255, 255, 0.5); /* Ajuste de opacidad para el ripple */
+    background-color: rgba(100, 95, 95, 0.5);
     opacity: 0.7;
 }
 
-/* Dark theme ripple color */
 [data-theme="dark"] .ripple {
     background-color: rgba(0, 0, 0, 0.4);
 }
@@ -833,18 +841,171 @@ table.dataTable.no-footer {
     }
 }
 
-/* Asegura que los elementos con ripple tengan position: relative y overflow: hidden */
-/* Ya incluido en los selectores de botón, pero repetido para claridad */
+/* Elementos con ripple */
 .btn, .auth-form button, .error-page-container a {
     position: relative;
     overflow: hidden;
 }
 
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.6);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: var(--card-background);
+    margin: auto;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: var(--shadow-md); /* Fallback para --shadow-medium */
+    width: 90%;
+    max-width: 600px;
+    position: relative;
+    animation: fadeIn 0.3s ease-out;
+    color: var(--text-color);
+}
+
+.modal-content h2 {
+    color: var(--primary-color);
+    margin-top: 0;
+    margin-bottom: 25px;
+    font-size: 1.8em;
+    text-align: center;
+}
+
+.modal-content .form-group {
+    margin-bottom: 20px;
+}
+
+.modal-content label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: var(--text-light-color);
+}
+
+.modal-content input[type="text"],
+.modal-content input[type="datetime-local"],
+.modal-content select {
+    width: calc(100% - 20px);
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--input-bg); /* Corrección de --input-background */
+    color: var(--text-color);
+    font-size: 1em;
+    transition: border-color 0.3s ease;
+}
+
+.modal-content input[type="text"]:focus,
+.modal-content input[type="datetime-local"]:focus,
+.modal-content select:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+.modal-content .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.modal-content .btn {
+    padding: 12px 25px;
+    font-size: 1em;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.modal-content .btn-primary {
+    background-color: var(--primary-color);
+    color: rgb(75, 48, 212);
+}
+
+.modal-content .btn-primary:hover {
+    background-color: var(--primary-dark-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg); /* Fallback para --shadow-hover */
+}
+
+.modal-content .btn-secondary {
+    background-color: #2c2f32; /* Fallback para --gray-dark */
+    color: rgb(12, 152, 165);
+}
+
+.modal-content .btn-secondary:hover {
+    background-color: #3f4346; /* Fallback para --gray-medium */
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg); /* Fallback para --shadow-hover */
+}
+
+.close-button {
+    color: var(--text-light-color);
+    font-size: 28px;
+    font-weight: bold;
+    position: absolute;
+    top: 15px;
+    right: 25px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: var(--primary-color);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.table-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.table-actions h3 {
+    margin: 0;
+    color: var(--text-color);
+}
+
+body[data-theme="dark"] input[type="datetime-local"] {
+    filter: invert(1) hue-rotate(180deg);
+}
+
+.btn-sm i.fas {
+    color: inherit;
+}
+
+.btn .fas {
+    color: inherit;
+}
 
 /* Responsive Design */
 @media (max-width: 992px) {
     .sidebar {
-        width: 220px; /* Un poco más estrecho */
+        width: 220px;
         padding: 15px;
     }
 
@@ -912,7 +1073,7 @@ table.dataTable.no-footer {
         padding: 15px 20px;
         border-bottom: 1px solid var(--border-color);
         border-right: none;
-        overflow-x: auto; /* Para que la navegación horizontal sea posible */
+        overflow-x: auto;
     }
 
     .sidebar .logo {
@@ -936,7 +1097,7 @@ table.dataTable.no-footer {
     }
 
     .sidebar nav {
-        display: none; /* Ocultar la navegación por defecto, necesitarás un "menú hamburguesa" si quieres mostrarla */
+        display: none;
     }
 
     .sidebar .theme-toggle-container {
@@ -949,7 +1110,7 @@ table.dataTable.no-footer {
     .content-area {
         margin-left: 0;
         width: 100%;
-        padding-top: 20px; /* Espacio para el sidebar superior */
+        padding-top: 20px;
     }
 
     .header {
@@ -972,7 +1133,7 @@ table.dataTable.no-footer {
     }
 
     .kpi-cards, .chart-grid {
-        grid-template-columns: 1fr; /* Una columna en pantallas pequeñas */
+        grid-template-columns: 1fr;
         gap: 15px;
     }
 
@@ -1038,165 +1199,4 @@ table.dataTable.no-footer {
         padding: 12px 25px;
         font-size: 1em;
     }
-}
-
-/* Estilos para el Modal (Añadir/Editar Vuelo) */
-.modal {
-    display: none; /* Oculto por defecto */
-    position: fixed; /* Posición fija para cubrir toda la ventana */
-    z-index: 1000; /* Asegura que esté por encima de todo */
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto; /* Habilitar scroll si el contenido es grande */
-    background-color: rgba(0, 0, 0, 0.6); /* Fondo semi-transparente */
-    justify-content: center; /* Centrar horizontalmente con flex */
-    align-items: center; /* Centrar verticalmente con flex */
-}
-
-.modal-content {
-    background-color: var(--card-background);
-    margin: auto;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: var(--shadow-medium);
-    width: 90%; /* Ancho responsivo */
-    max-width: 600px; /* Ancho máximo */
-    position: relative;
-    animation: fadeIn 0.3s ease-out; /* Animación de entrada */
-    color: var(--text-color);
-}
-
-.modal-content h2 {
-    color: var(--primary-color);
-    margin-top: 0;
-    margin-bottom: 25px;
-    font-size: 1.8em;
-    text-align: center;
-}
-
-.modal-content .form-group {
-    margin-bottom: 20px;
-}
-
-.modal-content label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: bold;
-    color: var(--text-light-color);
-}
-
-.modal-content input[type="text"],
-.modal-content input[type="datetime-local"],
-.modal-content select {
-    width: calc(100% - 20px); /* Ajuste para padding */
-    padding: 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background-color: var(--input-background);
-    color: var(--text-color);
-    font-size: 1em;
-    transition: border-color 0.3s ease;
-}
-
-.modal-content input[type="text"]:focus,
-.modal-content input[type="datetime-local"]:focus,
-.modal-content select:focus {
-    border-color: var(--primary-color);
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
-}
-
-.modal-content .form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 15px;
-    margin-top: 30px;
-}
-
-.modal-content .btn {
-    padding: 12px 25px;
-    font-size: 1em;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-    border: none;
-    position: relative;
-    overflow: hidden;
-}
-
-.modal-content .btn-primary {
-    background-color: var(--primary-color);
-    color: white;
-}
-
-.modal-content .btn-primary:hover {
-    background-color: var(--primary-dark);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-hover);
-}
-
-.modal-content .btn-secondary {
-    background-color: var(--gray-dark);
-    color: white;
-}
-
-.modal-content .btn-secondary:hover {
-    background-color: var(--gray-medium);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-hover);
-}
-
-
-.close-button {
-    color: var(--text-light-color);
-    font-size: 28px;
-    font-weight: bold;
-    position: absolute;
-    top: 15px;
-    right: 25px;
-    cursor: pointer;
-    transition: color 0.3s ease;
-}
-
-.close-button:hover,
-.close-button:focus {
-    color: var(--primary-color);
-    text-decoration: none;
-    cursor: pointer;
-}
-
-/* Animación para el modal */
-@keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.9); }
-    to { opacity: 1; transform: scale(1); }
-}
-
-/* Ajuste para el botón "Añadir Nuevo Vuelo" en la tabla */
-.table-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.table-actions h3 {
-    margin: 0;
-    color: var(--text-color);
-}
-
-/* Asegurar que los inputs de fecha/hora se vean bien en tema oscuro */
-body[data-theme="dark"] input[type="datetime-local"] {
-    filter: invert(1) hue-rotate(180deg); /* Invierte colores para hacer el selector visible */
-}
-
-/* Ajuste de color para los iconos en botones de la tabla */
-.btn-sm i.fas {
-    color: inherit; /* Hereda el color del botón para que no se pierda */
-}
-
-/* Asegura que los íconos de Font Awesome en los botones tengan el color correcto */
-.btn .fas {
-    color: inherit;
 }

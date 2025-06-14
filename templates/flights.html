@@ -1,80 +1,289 @@
-{% extends 'base.html' %}
-
-{% block title %}Vuelos{% endblock %}
-
-{% block content %}
-<div class="header">
-    <h1>Gestión de Vuelos</h1>
-    <div class="user-info">
-        <span class="user-avatar">{{ username[0]|upper }}</span>
-        <span class="username">¡Hola, {{ username }}!</span>
-        <a href="{{ url_for('logout') }}" title="Cerrar Sesión"><i class="fas fa-power-off"></i></a>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Vuelos</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.jpg') }}" type="image/x-icon">
+   
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+   
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+   
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body data-theme="light">
+    <aside class="sidebar">
+        <div class="logo">
+            <img src="https://i.pinimg.com/736x/36/d7/d9/36d7d93135d02f4360730ade069fb435.jpg" alt="Logo de Avión">
+            <h2>Gestión de Vuelos</h2>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="{{ url_for('flights') }}" class="{% if request.endpoint == 'flights' %}active{% endif %}"><i class="fas fa-plane"></i> Vuelos</a></li>
+                <li><a href="{{ url_for('charts') }}" class="{% if request.endpoint == 'charts' %}active{% endif %}"><i class="fas fa-chart-bar"></i> Gráficos</a></li>
+                <li><a href="{{ url_for('profile') }}" class="{% if request.endpoint == 'profile' %}active{% endif %}"><i class="fas fa-user-circle"></i> Perfil</a></li>
+                <li class="logout-link"><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+            </ul>
+        </nav>
+        <div class="theme-toggle-container">
+            <i class="fas fa-sun"></i>
+            <label class="switch">
+                <input type="checkbox" id="theme-toggle">
+                <span class="slider round"></span>
+            </label>
+            <i class="fas fa-moon"></i>
+        </div>
+    </aside>
+ 
+    <div class="content-area">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages-container">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+ 
+        <div class="table-section">
+            <div class="table-actions">
+                <h3>Vuelos</h3>
+                <button class="btn btn-primary" onclick="openAddFlightModal()"><i class="fas fa-plus"></i> Agregar Vuelo</button>
+            </div>
+            <table id="flightsTable" class="display nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>ID Vuelo</th>
+                        <th>Origen</th>
+                        <th>Destino</th>
+                        <th>Fecha Salida</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+ 
+        <footer class="footer">
+            <p>© 2025 Gestión de Vuelos. Santiago,Dayra.</p>
+        </footer>
     </div>
-</div>
+ 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+   
+    <script type="text/javascript" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+   
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+ 
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+   
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/overlayscrollbars/1.13.0/js/OverlayScrollbars.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/overlayscrollbars/1.13.0/css/OverlayScrollbars.min.css">
+ 
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+ 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Lógica para los mensajes flash (desaparecer después de un tiempo)
+            const flashMessages = document.querySelectorAll('.flash-messages-container .alert');
+            flashMessages.forEach(msg => {
+                setTimeout(() => {
+                    msg.style.opacity = '0';
+                    msg.style.transition = 'opacity 0.5s ease-out';
+                    setTimeout(() => msg.remove(), 500); // Remover después de la transición
+                }, 4000); // Desaparecer después de 4 segundos
+            });
+ 
+            // Lógica del tema oscuro/claro
+            const themeToggle = document.getElementById('theme-toggle');
+            const body = document.body;
+ 
+            // Cargar el tema guardado
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            body.setAttribute('data-theme', savedTheme);
+            themeToggle.checked = (savedTheme === 'dark');
+ 
+            // Escuchar el cambio en el toggle
+            themeToggle.addEventListener('change', () => {
+                if (themeToggle.checked) {
+                    body.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    body.setAttribute('data-theme', 'light');
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+ 
+            // Con OverlayScrollbars:
+            if (typeof OverlayScrollbars !== 'undefined') {
+                if (document.querySelector('.sidebar')) {
+                    OverlayScrollbars(document.querySelector('.sidebar'), {
+                        className: "os-theme-dark",
+                        scrollbars: {
+                            visibility: "auto",
+                            autoHide: "leave"
+                        }
+                    });
+                }
+                if (document.querySelector('.content-area')) {
+                    OverlayScrollbars(document.querySelector('.content-area'), {
+                        className: "os-theme-dark",
+                        scrollbars: {
+                            visibility: "auto",
+                            autoHide: "leave"
+                        }
+                    });
+                }
+            }
 
-<div class="table-section">
-    <div class="table-actions">
-        <h3>Lista de Vuelos</h3>
-        <button id="addFlightBtn" class="btn btn-primary"><i class="fas fa-plus"></i> Añadir Nuevo Vuelo</button>
-    </div>
-    <table id="flightsTable" class="display nowrap" style="width:100%">
-        <thead>
-            <tr>
-                <th>ID Vuelo</th>
-                <th>Aerolínea</th>
-                <th>Origen</th>
-                <th>Destino</th>
-                <th>Fecha Salida</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            </tbody>
-    </table>
-</div>
+            // Inicializar DataTables
+            const table = $('#flightsTable').DataTable({
+                ajax: {
+                    url: '/api/flights',
+                    dataSrc: 'data'
+                },
+                columns: [
+                    { data: 'id_vuelo' },
+                    { data: 'origen' },
+                    { data: 'destino' },
+                    { data: 'fecha_salida' },
+                    { data: 'estado' },
+                    { 
+                        data: null,
+                        render: function(data, type, row) {
+                            return `<button class="btn btn-warning btn-sm edit-btn" data-id="${row._id.$oid || row._id}" title="Editar Vuelo"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-danger btn-sm delete-btn" data-id="${row._id.$oid || row._id}" title="Eliminar Vuelo"><i class="fas fa-trash-alt"></i></button>`;
+                        },
+                        orderable: false,
+                        searchable: false
+                    }
+                ],
+                responsive: true,
+                pageLength: 10,
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json'
+                }
+            });
 
-<div id="flightModal" class="modal">
-    <div class="modal-content">
-        <span class="close-button">&times;</span>
-        <h2 id="modalTitle">Añadir Nuevo Vuelo</h2>
-        <form id="flightForm">
-            <input type="hidden" id="flightId"> <div class="form-group">
-                <label for="modalIdVuelo">ID Vuelo</label>
-                <input type="text" id="modalIdVuelo" name="id_vuelo" required>
-            </div>
-            <div class="form-group">
-                <label for="modalAerolinea">Aerolínea</label>
-                <input type="text" id="modalAerolinea" name="aerolinea" required>
-            </div>
-            <div class="form-group">
-                <label for="modalOrigen">Origen</label>
-                <input type="text" id="modalOrigen" name="origen" required>
-            </div>
-            <div class="form-group">
-                <label for="modalDestino">Destino</label>
-                <input type="text" id="modalDestino" name="destino" required>
-            </div>
-            <div class="form-group">
-                <label for="modalFechaSalida">Fecha Salida</label>
-                <input type="datetime-local" id="modalFechaSalida" name="fecha_salida" required>
-            </div>
-            <div class="form-group">
-                <label for="modalEstado">Estado</label>
-                <select id="modalEstado" name="estado" required>
-                    <option value="Programado">Programado</option>
-                    <option value="En Vuelo">En Vuelo</option>
-                    <option value="Aterrizado">Aterrizado</option>
-                    <option value="Cancelado">Cancelado</option>
-                    <option value="Retrasado">Retrasado</option>
-                </select>
-            </div>
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary" id="saveFlightBtn">Guardar</button>
-                <button type="button" class="btn btn-secondary" id="cancelFlightBtn">Cancelar</button>
-            </div>
-        </form>
-    </div>
-</div>
+            // Manejar clics en botones de editar y eliminar
+            $('#flightsTable tbody').on('click', '.edit-btn', function() {
+                const flightId = $(this).data('id');
+                openEditFlightModal(flightId);
+            });
 
-{% endblock %}
+            $('#flightsTable tbody').on('click', '.delete-btn', function() {
+                const flightId = $(this).data('id');
+                deleteFlight(flightId);
+            });
+
+            // Modal para agregar/editar vuelos
+            const modal = $('<div id="flightModal" class="modal"><div class="modal-content"><span class="close-button">×</span><h2 id="modalTitle">Agregar Vuelo</h2><form id="flightForm"><div class="form-group"><label for="id_vuelo">ID Vuelo</label><input type="text" id="id_vuelo" name="id_vuelo" required></div><div class="form-group"><label for="origen">Origen</label><input type="text" id="origen" name="origen" required></div><div class="form-group"><label for="destino">Destino</label><input type="text" id="destino" name="destino" required></div><div class="form-group"><label for="fecha_salida">Fecha Salida</label><input type="datetime-local" id="fecha_salida" name="fecha_salida" required></div><div class="form-group"><label for="estado">Estado</label><select id="estado" name="estado" required><option value="Programado">Programado</option><option value="En Vuelo">En Vuelo</option><option value="Aterrizado">Aterrizado</option><option value="Retrasado">Retrasado</option></select></div><div class="form-actions"><button type="submit" class="btn btn-primary">Guardar</button><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button></div></form></div></div>');
+            $('body').append(modal);
+
+            // Manejar el envío del formulario
+            $('#flightForm').on('submit', function(e) {
+                e.preventDefault();
+                const flightId = $('#flightModal').data('id');
+                const data = {
+                    id_vuelo: $('#id_vuelo').val(),
+                    origen: $('#origen').val(),
+                    destino: $('#destino').val(),
+                    fecha_salida: $('#fecha_salida').val(),
+                    estado: $('#estado').val()
+                };
+
+                const method = flightId ? 'PUT' : 'POST';
+                const url = flightId ? `/api/vuelos/${flightId}` : '/api/vuelos';
+
+                $.ajax({
+                    url: url,
+                    type: method,
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function(response) {
+                        table.ajax.reload();
+                        closeModal();
+                        flashMessage('Vuelo guardado exitosamente.', 'success');
+                    },
+                    error: function(xhr) {
+                        flashMessage('Error al guardar el vuelo: ' + (xhr.responseJSON?.message || xhr.statusText), 'danger');
+                    }
+                });
+            });
+
+            // Abrir modal para agregar vuelo
+            function openAddFlightModal() {
+                $('#modalTitle').text('Agregar Vuelo');
+                $('#flightForm')[0].reset();
+                $('#id_vuelo').prop('readonly', false);
+                $('#flightModal').data('id', '');
+                $('#flightModal').css('display', 'flex');
+            }
+
+            // Abrir modal para editar vuelo
+            function openEditFlightModal(flightId) {
+                $.ajax({
+                    url: `/api/vuelos/${flightId}`,
+                    type: 'GET',
+                    success: function(flight) {
+                        $('#modalTitle').text('Editar Vuelo');
+                        $('#id_vuelo').val(flight.id_vuelo).prop('readonly', true);
+                        $('#origen').val(flight.origen);
+                        $('#destino').val(flight.destino);
+                        $('#fecha_salida').val(flight.fecha_salida.replace('Z', '').slice(0, 16));
+                        $('#estado').val(flight.estado);
+                        $('#flightModal').data('id', flightId);
+                        $('#flightModal').css('display', 'flex');
+                    },
+                    error: function(xhr) {
+                        flashMessage('Error al cargar el vuelo: ' + (xhr.responseJSON?.message || xhr.statusText), 'danger');
+                    }
+                });
+            }
+
+            // Eliminar vuelo
+            function deleteFlight(flightId) {
+                if (confirm('¿Estás seguro de que quieres eliminar este vuelo?')) {
+                    $.ajax({
+                        url: `/api/vuelos/${flightId}`,
+                        type: 'DELETE',
+                        success: function() {
+                            $('#flightsTable').DataTable().ajax.reload();
+                            flashMessage('Vuelo eliminado exitosamente.', 'success');
+                        },
+                        error: function(xhr) {
+                            flashMessage('Error al eliminar el vuelo: ' + (xhr.responseJSON?.message || xhr.statusText), 'danger');
+                        }
+                    });
+                }
+            }
+
+            // Cerrar modal
+            function closeModal() {
+                $('#flightModal').css('display', 'none');
+            }
+
+            // Manejar el cierre del modal con el botón de cerrar
+            $('.close-button').on('click', closeModal);
+
+            // Función para mostrar mensajes flash
+            function flashMessage(message, category) {
+                const container = $('.flash-messages-container');
+                const messageHtml = `<div class="alert alert-${category}">${message}<button type="button" class="close" onclick="this.parentElement.remove()"><span aria-hidden="true">×</span></button></div>`;
+                container.append(messageHtml);
+                setTimeout(() => {
+                    container.find('.alert:last-child').css('opacity', '0').slideUp(500, function() {
+                        $(this).remove();
+                    });
+                }, 4000);
+            }
+        });
+    </script>
+</body>
+</html>

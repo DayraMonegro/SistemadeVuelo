@@ -6,14 +6,14 @@ from pymongo import MongoClient
 from pymongo.errors import ConfigurationError
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta
- 
+
 # Cargar variables de entorno si existe un archivo .env
 from dotenv import load_dotenv
 load_dotenv()
- 
+
 app = Flask(__name__)
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'una_clave_super_secreta_y_fuerte_aqui')
- 
+
 # Configuración de MongoDB
 mongo_uri = os.environ.get('MONGO_URI')
 if not mongo_uri:
@@ -21,20 +21,22 @@ if not mongo_uri:
     print("WARNING: MONGO_URI no definida en variables de entorno. Usando URI por defecto.")
 else:
     print("Usando MONGO_URI de las variables de entorno.")
- 
+
 try:
     client = MongoClient(mongo_uri, tlsCAFile=certifi.where())
-    db = client.flask_flights # Tu base de datos
-    flights_collection = db.flights # Tu colección de vuelos
-    users_collection = db.users # Colección de usuarios
+    db = client.flask_flights
+    flights_collection = db.flights
+    users_collection = db.users
+    reservas_collection = db.reservas
+    pagos_collection = db.pagos
     print("Conexión a MongoDB Atlas exitosa.")
 except ConfigurationError as e:
     print(f"Error de configuración de MongoDB: {e}")
     print("Asegúrate de que la MONGO_URI sea correcta y tu IP esté en la lista de acceso de Atlas.")
     exit(1)
- 
-CORS(app) # Habilitar CORS para toda la aplicación
- 
+
+CORS(app)
+
 # Decorador de autenticación
 def login_required(f):
     def wrapper(*args, **kwargs):
@@ -49,7 +51,7 @@ def login_required(f):
    
     wrapper.__name__ = f.__name__
     return wrapper
- 
+
 # Rutas de Autenticación
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -127,18 +129,14 @@ def mongo_data():
     username = session.get('username', 'Invitado')
    
     # Obtener todos los documentos de la colección 'flights'
-    # Limita la cantidad de documentos para evitar sobrecargar la página si hay muchos
-    # Podrías añadir un parámetro de consulta como /mongo_data?collection=users para ver otras
-    data_cursor = flights_collection.find().limit(50) # Muestra los primeros 50 documentos
+    data_cursor = flights_collection.find().limit(50)
    
-    # Convertir los ObjectId y datetimes a strings para que tojson pueda serializarlos
-    # Es crucial para evitar errores de serialización JSON en Jinja2
     formatted_data = []
     for doc in data_cursor:
         doc['_id'] = str(doc['_id'])
         for key, value in doc.items():
             if isinstance(value, datetime):
-                doc[key] = value.isoformat() # Convertir datetime a string ISO 8601
+                doc[key] = value.isoformat()
         formatted_data.append(doc)
  
     return render_template('mongo_data.html', username=username, data=formatted_data)
@@ -154,43 +152,33 @@ def get_flights():
     start = int(request.args.get('start', 0))
     length = int(request.args.get('length', 10))
    
-    # Parámetros de búsqueda general de DataTables
     search_value = request.args.get('search[value]', '')
    
-    # Parámetros de ordenamiento de DataTables
     order_column_index = int(request.args.get('order[0][column]', 0))
     order_direction = request.args.get('order[0][dir]', 'asc')
  
-    # Define las columnas de tu tabla y si son ordenables/buscables
     columns = [
         {'data': 'id_vuelo', 'orderable': True, 'searchable': True},
-        {'data': 'aerolinea', 'orderable': True, 'searchable': True},
         {'data': 'origen', 'orderable': True, 'searchable': True},
         {'data': 'destino', 'orderable': True, 'searchable': True},
         {'data': 'fecha_salida', 'orderable': True, 'searchable': True},
         {'data': 'estado', 'orderable': True, 'searchable': True},
-        {'data': 'actions', 'orderable': False, 'searchable': False} # La columna de acciones NO es ordenable/buscable
+        {'data': 'actions', 'orderable': False, 'searchable': False}
     ]
  
-    # Obtener el nombre de la columna a ordenar usando el índice proporcionado por DataTables
-    # y la lista 'columns' definida arriba.
-    # Usamos .get() con un valor por defecto ('id_vuelo') por si el índice no es válido.
     if 0 <= order_column_index < len(columns):
         sort_column_name = columns[order_column_index]['data']
     else:
-        sort_column_name = 'id_vuelo' # Columna por defecto si el índice es inválido
+        sort_column_name = 'id_vuelo'
  
-    # Asegurarse de que la columna seleccionada sea realmente ordenable.
-    # Esto previene errores si DataTables intenta ordenar una columna marcada como no ordenable.
     selected_column_info = columns[order_column_index]
-    if not selected_column_info.get('orderable', True): # Si 'orderable' es False, o no está presente y el valor por defecto es True
-        sort_column_name = 'id_vuelo' # Fallback a una columna por defecto si no es ordenable
+    if not selected_column_info.get('orderable', True):
+        sort_column_name = 'id_vuelo'
  
     query = {}
     if search_value:
         query['$or'] = [
             {'id_vuelo': {'$regex': search_value, '$options': 'i'}},
-            {'aerolinea': {'$regex': search_value, '$options': 'i'}},
             {'origen': {'$regex': search_value, '$options': 'i'}},
             {'destino': {'$regex': search_value, '$options': 'i'}},
             {'estado': {'$regex': search_value, '$options': 'i'}}
@@ -201,7 +189,6 @@ def get_flights():
  
     sort_direction = 1 if order_direction == 'asc' else -1
    
-    # Aquí es donde se corrige el error: PyMongo's .sort() espera el nombre de la columna (string)
     flights_cursor = flights_collection.find(query).sort(sort_column_name, sort_direction).skip(start).limit(length)
  
     data = []
@@ -219,7 +206,6 @@ def get_flights():
  
         data.append({
             'id_vuelo': flight.get('id_vuelo'),
-            'aerolinea': flight.get('aerolinea'),
             'origen': flight.get('origen'),
             'destino': flight.get('destino'),
             'fecha_salida': fecha_salida_str,
@@ -255,11 +241,13 @@ def get_flight_by_id(flight_id):
 @login_required
 def add_flight():
     data = request.json
-    if not all(key in data for key in ['id_vuelo', 'aerolinea', 'origen', 'destino', 'fecha_salida', 'estado']):
+    if not all(key in data for key in ['id_vuelo', 'origen', 'destino', 'fecha_salida', 'estado']):
         return jsonify({"message": "Faltan campos obligatorios."}), 400
    
     try:
         data['fecha_salida'] = datetime.fromisoformat(data['fecha_salida'])
+        if 'fecha_llegada' in data:
+            data['fecha_llegada'] = datetime.fromisoformat(data['fecha_llegada'])
        
         result = flights_collection.insert_one(data)
         return jsonify({"message": "Vuelo añadido exitosamente.", "id": str(result.inserted_id)}), 201
@@ -271,11 +259,13 @@ def add_flight():
 @login_required
 def update_flight(flight_id):
     data = request.json
-    if not all(key in data for key in ['id_vuelo', 'aerolinea', 'origen', 'destino', 'fecha_salida', 'estado']):
+    if not all(key in data for key in ['id_vuelo', 'origen', 'destino', 'fecha_salida', 'estado']):
         return jsonify({"message": "Faltan campos obligatorios para la actualización."}), 400
  
     try:
         data['fecha_salida'] = datetime.fromisoformat(data['fecha_salida'])
+        if 'fecha_llegada' in data:
+            data['fecha_llegada'] = datetime.fromisoformat(data['fecha_llegada'])
  
         if '_id' in data:
             del data['_id']
@@ -307,21 +297,17 @@ def delete_flight(flight_id):
 @login_required
 def get_kpis():
     total_flights = flights_collection.count_documents({})
-    flights_today = flights_collection.count_documents({
-        'fecha_salida': {
-            '$gte': datetime.now().replace(hour=0, minute=0, second=0, microsecond=0),
-            '$lt': datetime.now().replace(hour=23, minute=59, second=59, microsecond=999999)
+    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    flights_today = reservas_collection.count_documents({
+        'fecha_reserva': {
+            '$gte': today,
+            '$lt': today.replace(hour=23, minute=59, second=59, microsecond=999999)
         }
     })
-    active_flights = flights_collection.count_documents({'estado': {'$in': ['En Vuelo', 'Programado', 'Retrasado']}})
-   
-    pipeline_revenue = [
-        {'$match': {'precio': {'$exists': True, '$ne': None}}},
-        {'$group': {'_id': None, 'total_revenue': {'$sum': '$precio'}}}
-    ]
-    revenue_result = list(flights_collection.aggregate(pipeline_revenue))
-    total_revenue = revenue_result[0]['total_revenue'] if revenue_result else 0
- 
+    active_flights = reservas_collection.count_documents({'estado': {'$in': ['activa']}})
+    total_revenue = pagos_collection.aggregate([
+        {'$group': {'_id': None, 'total_revenue': {'$sum': '$monto'}}}
+    ]).next().get('total_revenue', 0)
     return jsonify({
         "total_flights": total_flights,
         "flights_today": flights_today,
@@ -333,9 +319,9 @@ def get_kpis():
 @app.route('/api/chart_data', methods=['GET'])
 @login_required
 def get_chart_data():
-    # Vuelos por Aerolínea
+    # Vuelos por Origen
     pipeline_aerolinea = [
-        {'$group': {'_id': '$aerolinea', 'count': {'$sum': 1}}},
+        {'$group': {'_id': '$origen', 'count': {'$sum': 1}}},
         {'$sort': {'count': -1}}
     ]
     aerolinea_data = list(flights_collection.aggregate(pipeline_aerolinea))
@@ -343,53 +329,38 @@ def get_chart_data():
         "labels": [item['_id'] for item in aerolinea_data],
         "data": [item['count'] for item in aerolinea_data]
     }
- 
-    # Estado de Vuelos
+
+    # Estado de Reservas
     pipeline_estado = [
         {'$group': {'_id': '$estado', 'count': {'$sum': 1}}},
         {'$sort': {'count': -1}}
     ]
-    estado_data = list(flights_collection.aggregate(pipeline_estado))
+    estado_data = list(reservas_collection.aggregate(pipeline_estado))
     estado_vuelos = {
         "labels": [item['_id'] for item in estado_data],
         "data": [item['count'] for item in estado_data]
     }
- 
-    # Vuelos Diarios (solo vuelos con fecha de salida en el último mes, por ejemplo)
+
+    # Reservas Diarias (últimos 30 días)
     one_month_ago = datetime.now() - timedelta(days=30)
     pipeline_diarios = [
-        {'$match': {'fecha_salida': {'$gte': one_month_ago}}},
+        {'$match': {'fecha_reserva': {'$gte': one_month_ago}}},
         {'$group': {
             '_id': {
-                '$dateToString': {
-                    'format': '%Y-%m-%d',
-                    'date': '$fecha_salida'
-                }
+                '$dateToString': {'format': '%Y-%m-%d', 'date': '$fecha_reserva'}
             },
             'count': {'$sum': 1}
         }},
         {'$sort': {'_id': 1}}
     ]
-    diarios_data = list(flights_collection.aggregate(pipeline_diarios))
-   
-    date_labels = []
-    date_counts = {}
-    current_date = one_month_ago
-    while current_date <= datetime.now():
-        date_str = current_date.strftime('%Y-%m-%d')
-        date_labels.append(date_str)
-        date_counts.setdefault(date_str, 0)
-        current_date += timedelta(days=1)
- 
-    for item in diarios_data:
-        date_counts.setdefault(item['_id'], 0)
-        date_counts.update({item['_id']: item['count']})
- 
+    diarios_data = list(reservas_collection.aggregate(pipeline_diarios))
+    date_labels = [(one_month_ago + timedelta(days=i)).strftime('%Y-%m-%d') for i in range(31)]
+    date_counts = {item['_id']: item['count'] for item in diarios_data}
     vuelos_diarios = {
         "labels": date_labels,
         "data": [date_counts.get(label, 0) for label in date_labels]
     }
- 
+
     return jsonify({
         "vuelosPorAerolinea": vuelos_por_aerolinea,
         "estadoVuelos": estado_vuelos,
